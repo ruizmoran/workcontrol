@@ -1,3 +1,4 @@
 /.idea/
 /MavenConfig/starter-postgre/target/
 /Environment/.env
+**/postgres_data
