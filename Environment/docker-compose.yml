@@ -1,73 +1,93 @@
 services:
   postgres:
+    deploy:
+      replicas: 1
+    mem_limit: 128m
     image: postgres:15
-    container_name: workcontrol-db
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+    container_name: workcontrol-db-postgres
+    env_file:
+      - .env
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
       - ./init-db:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - workcontrol-net
 
   client-mng:
+    deploy:
+      replicas: 1
+    mem_limit: 256m
     build: ../Microservices/work-clientmng-api
+    image: work-clientmng-api:0.0.1
+    container_name: work-clientmng-api
     depends_on:
       - postgres
+    ports:
+      - 8081:8081
     environment:
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA: clientmng
-    networks:
-      - workcontrol-net
 
   operations-ms:
+    deploy:
+      replicas: 1
+    mem_limit: 256m
     build: ../Microservices/work-operations-api
+    image: work-operations-api:0.0.1
+    container_name: work-operation-api
     depends_on:
       - postgres
+    ports:
+      - 8082:8081
     environment:
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA: operations
-    networks:
-      - workcontrol-net
 
   content-ms:
+    deploy:
+      replicas: 1
+    mem_limit: 256m
     build: ../Microservices/work-content-api
+    image: work-content-api:0.0.1
+    container_name: work-content-api
     depends_on:
       - postgres
+    ports:
+      - 8083:8081
     environment:
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA: content
-    networks:
-      - workcontrol-net
 
   courses-ms:
+    deploy:
+      replicas: 1
+    mem_limit: 256m
     build: ../Microservices/work-courses-api
+    image: work-courses-api:0.0.1
+    container_name: work-courses-api
     depends_on:
       - postgres
+    ports:
+      - 8084:8081
     environment:
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA: courses
-    networks:
-      - workcontrol-net
 
 networks:
-  workcontrol-net:
+  default-nw:
+    external: false
 
 volumes:
   postgres_data:
